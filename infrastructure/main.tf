@@ -14,7 +14,7 @@ resource "azurerm_service_plan" "asp01" {
   resource_group_name = azurerm_resource_group.rg01.name
   location            = azurerm_resource_group.rg01.location
   os_type             = "Linux"
-  sku_name            = "F1"
+  sku_name            = "B1"
 }
 
 resource "azurerm_linux_web_app" "web01" {
@@ -24,10 +24,9 @@ resource "azurerm_linux_web_app" "web01" {
   service_plan_id     = azurerm_service_plan.asp01.id
 
   site_config {
-    always_on         = false
-    use_32_bit_worker = true
     application_stack {
-      dotnet_version = "6.0"
+      docker_image = "nginx"
+      docker_image_tag = "latest"
     }
   }
 
