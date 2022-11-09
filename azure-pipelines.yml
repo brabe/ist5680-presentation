@@ -12,6 +12,7 @@ variables:
     value: $(Build.SourcesDirectory)/infrastructure
 
 stages:
+  # BUILD APPLICATION
   - stage: build
     displayName: Build
     jobs:
@@ -39,3 +40,40 @@ stages:
                 latest
               addPipelineData: false
               addBaseImageData: false
+  # BUILD INFRASTRUCTURE
+  - stage: infrastructure
+    displayName: Infrastructure
+    jobs: 
+      - job: terraformDeployment
+        displayName: Deploy Terraform
+        steps:
+          - task: AzureKeyVault@2
+            displayName: Get Secrets from AKV
+            inputs:
+              azureSubscription: 'Action Pack Subscription'
+              KeyVaultName: 'gts-tf-keyvault'
+              SecretsFilter: 'terraform-sp-id, terraform-sp-key, terraform-sp-tenant, terraform-sp-subscription'
+          - task: Bash@3 
+            displayName: Terraform Init
+            inputs:
+              workingDirectory: $(infrastructureDirectory)
+              script: |
+                terraform init -no-color
+              targetType: inline
+            env:
+              ARM_SUBSCRIPTION_ID: $(terraform-sp-subscription)
+              ARM_TENANT_ID: $(terraform-sp-tenant)
+              ARM_CLIENT_ID: $(terraform-sp-id)
+              ARM_CLIENT_SECRET: $(terraform-sp-key)
+          - task: Bash@3 
+            displayName: Terraform Apply
+            inputs:
+              workingDirectory: $(infrastructureDirectory)
+              script: |
+                terraform apply -no-color -auto-approve
+              targetType: inline
+            env:
+              ARM_SUBSCRIPTION_ID: $(terraform-sp-subscription)
+              ARM_TENANT_ID: $(terraform-sp-tenant)
+              ARM_CLIENT_ID: $(terraform-sp-id)
+              ARM_CLIENT_SECRET: $(terraform-sp-key)
