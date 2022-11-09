@@ -1,0 +1,25 @@
+
+# FROM mcr.microsoft.com/dotnet/aspnet:6.0 as runtime
+
+# EXPOSE 80
+# EXPOSE 443
+
+# WORKDIR /app
+# COPY ./publish ./
+
+# ENTRYPOINT [ "dotnet", "WeatherForecast.dll" ]
+
+FROM alpine:3.16
+
+RUN apk add --no-cache \ 
+    openssh libunwind \
+    nghttp2-libs libidn krb5-libs libuuid lttng-ust zlib \
+    libstdc++ libintl \
+    icu
+
+EXPOSE 80
+
+WORKDIR /app
+COPY ../publish ./
+
+ENTRYPOINT  ["./WeatherForecast", "--urls", "http://0.0.0.0:80"]
