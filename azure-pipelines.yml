@@ -30,7 +30,7 @@ stages:
               repository: 'ist5680'
               command: 'buildAndPush'
               Dockerfile: '$(applicationDirectory)/WeatherForecast/dockerfile'
-              buildContext: '$(applicationDirectory)'
+              buildContext: '$(applicationDirectory)/WeatherForecast/'
               tags: |
                 $(Build.BuildId)
                 latest
