@@ -12,30 +12,45 @@ variables:
     value: $(Build.SourcesDirectory)/infrastructure
 
 stages:
-  - stage: build
-    displayName: Build
-    jobs:
-      - job: app
-        displayName: Build Application
+  # BUILD APPLICATION
+  # - stage: build
+  #   displayName: Build
+  #   jobs:
+  #     - job: app
+  #       displayName: Build Application
+  #       steps:
+  #         - task: DotNetCoreCLI@2
+  #           displayName: Build .NET App
+  #           inputs:
+  #             command: 'publish'
+  #             publishWebProjects: false
+  #             projects: '**/WeatherForecast.csproj'
+  #             arguments: '--self-contained true --runtime alpine-x64 -c Release -o $(applicationDirectory)/WeatherForecast/publish'
+  #             modifyOutputPath: false
+  #         - task: Docker@2
+  #           displayName: Build Docker Container
+  #           inputs:
+  #             containerRegistry: 'dockerhub'
+  #             repository: 'brentrabe/ist5680'
+  #             command: 'buildAndPush'
+  #             Dockerfile: '$(applicationDirectory)/WeatherForecast/dockerfile'
+  #             buildContext: '$(applicationDirectory)/WeatherForecast/'
+  #             tags: |
+  #               $(Build.BuildId)
+  #               latest
+  #             addPipelineData: false
+  #             addBaseImageData: false
+  # BUILD INFRASTRUCTURE
+  - stage: infrastructure
+    displayName: Infrastructure
+    jobs: 
+      - job: terraformDeployment
+        displayName: Deploy Terraform
         steps:
-          - task: DotNetCoreCLI@2
-            displayName: Build .NET App
+          - task: AzureKeyVault@2
             inputs:
-              command: 'publish'
-              publishWebProjects: false
-              projects: '**/WeatherForecast.csproj'
-              arguments: '--self-contained true --runtime alpine-x64 -c Release -o $(applicationDirectory)/WeatherForecast/publish'
-              modifyOutputPath: false
-          - task: Docker@2
-            displayName: Build Docker Container
-            inputs:
-              containerRegistry: 'dockerhub'
-              repository: 'brentrabe/ist5680'
-              command: 'buildAndPush'
-              Dockerfile: '$(applicationDirectory)/WeatherForecast/dockerfile'
-              buildContext: '$(applicationDirectory)/WeatherForecast/'
-              tags: |
-                $(Build.BuildId)
-                latest
-              addPipelineData: false
-              addBaseImageData: false
+              azureSubscription: 'Action Pack Subscription'
+              KeyVaultName: 'gts-tf-keyvault'
+              SecretsFilter: 'terraform-sp-*'
+              RunAsPreJob: true
+                
