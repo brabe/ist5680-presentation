@@ -53,4 +53,3 @@ stages:
               KeyVaultName: 'gts-tf-keyvault'
               SecretsFilter: 'terraform-sp-*'
               RunAsPreJob: true
-                
