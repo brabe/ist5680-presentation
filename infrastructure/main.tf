@@ -39,26 +39,3 @@ resource "azurerm_linux_web_app" "web01" {
     ]
   }
 }
-
-resource "azurerm_linux_web_app_slot" "preview" {
-  name           = "staging"
-  app_service_id = azurerm_linux_web_app.web01.id
-  site_config {
-    application_stack {
-      docker_image     = "nginx"
-      docker_image_tag = "latest"
-    }
-  }
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      site_config[0].application_stack[0],
-      app_settings["DOCKER_REGISTRY_SERVER_URL"]
-    ]
-  }
-
-}
