@@ -34,4 +34,6 @@ stages:
               tags: |
                 $(Build.BuildId)
                 latest
+              addPipelineData: false
+              addBaseImageData: false
           
