@@ -2,7 +2,8 @@ trigger:
 - main
 
 pool:
-  name: Default
+  # name: Default
+  vmImage: ubuntu-latest
 
 variables:
   - name: applicationDirectory
@@ -22,7 +23,7 @@ stages:
               command: 'publish'
               publishWebProjects: false
               projects: '**/WeatherForecast.csproj'
-              arguments: '--self-contained true --runtime alpine-x64 -c Release -o publish'
+              arguments: '--self-contained true --runtime alpine-x64 -c Release -o $(applicationDirectory)/WeatherForecast/publish'
               modifyOutputPath: false
           - task: Docker@2
             inputs:
