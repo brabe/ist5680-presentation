@@ -1,2 +1,8 @@
 # Ignore Terraform Temp Directory
-.terraform/
+**/.terraform/
+
+application/publish/
+
+**/bin
+**/obj
+**/Properties
