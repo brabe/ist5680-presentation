@@ -30,6 +30,7 @@ stages:
               repository: 'ist5680'
               command: 'buildAndPush'
               Dockerfile: '$(applicationDirectory)/dockerfile'
+              buildContext: '$(applicationDirectory)'
               tags: |
                 $(Build.BuildId)
                 latest
