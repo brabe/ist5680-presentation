@@ -27,7 +27,7 @@ stages:
               command: "publish"
               publishWebProjects: false
               projects: "**/WeatherForecast.csproj"
-              arguments: "--self-contained true --runtime alpine-x64 -c Release -o $(applicationDirectory)/WeatherForecast/publish"
+              arguments: "-c Release -o $(applicationDirectory)/WeatherForecast/publish"
               modifyOutputPath: false
           - task: Docker@2
             displayName: Build Docker Container
