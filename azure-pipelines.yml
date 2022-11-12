@@ -25,17 +25,17 @@ stages:
             displayName: Build .NET App
             inputs:
               command: "publish"
-              publishWebProjects: false
+              publishWebProjects: true
               projects: "**/WeatherForecast.csproj"
               arguments: "-c Release -o $(applicationDirectory)/WeatherForecast/publish"
               modifyOutputPath: false
           - task: Docker@2
             displayName: Build Docker Container
             inputs:
-              containerRegistry: 'dockerhub'
-              repository: '$(dockerRegistry)'
-              command: 'buildAndPush'
-              Dockerfile: '$(applicationDirectory)/WeatherForecast/dockerfile'
+              containerRegistry: "dockerhub"
+              repository: "$(dockerRegistry)"
+              command: "buildAndPush"
+              Dockerfile: "$(applicationDirectory)/WeatherForecast/dockerfile"
               tags: |
                 $(Build.BuildId)
                 latest
