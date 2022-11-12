@@ -87,7 +87,7 @@ stages:
               TF_VAR_docker_image: "$(dockerRegistry)"
               TF_VAR_docker_image_tag: "$(Build.BuildId)"
               TF_VAR_docker_server_username: "$(dockerhub-username)"
-              TF_VAR_docker_server_password: "$(dockerhub-password)"
+              TF_VAR_docker_server_password: "$(dockerhub-apitoken)"
 
   - stage: deploymentInt
     displayName: Deployment - INT
@@ -134,7 +134,7 @@ stages:
               TF_VAR_docker_image: "$(dockerRegistry)"
               TF_VAR_docker_image_tag: "$(Build.BuildId)"
               TF_VAR_docker_server_username: "$(dockerhub-username)"
-              TF_VAR_docker_server_password: "$(dockerhub-password)"
+              TF_VAR_docker_server_password: "$(dockerhub-apitoken)"
 
   - stage: deploymentQa
     displayName: Deployment - QA
@@ -181,7 +181,7 @@ stages:
               TF_VAR_docker_image: "$(dockerRegistry)"
               TF_VAR_docker_image_tag: "$(Build.BuildId)"
               TF_VAR_docker_server_username: "$(dockerhub-username)"
-              TF_VAR_docker_server_password: "$(dockerhub-password)"
+              TF_VAR_docker_server_password: "$(dockerhub-apitoken)"
 
   - stage: deploymentPrd
     displayName: Deployment - PROD
@@ -228,4 +228,4 @@ stages:
               TF_VAR_docker_image: "$(dockerRegistry)"
               TF_VAR_docker_image_tag: "$(Build.BuildId)"
               TF_VAR_docker_server_username: "$(dockerhub-username)"
-              TF_VAR_docker_server_password: "$(dockerhub-password)"
+              TF_VAR_docker_server_password: "$(dockerhub-apitoken)"
