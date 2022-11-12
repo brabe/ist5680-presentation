@@ -1,6 +1,6 @@
 
 locals {
-  prefix = "ist5680_${var.environment}"
+  prefix = "ist5680-${var.environment}"
 }
 
 resource "azurerm_resource_group" "rg01" {
