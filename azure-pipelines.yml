@@ -32,11 +32,10 @@ stages:
           - task: Docker@2
             displayName: Build Docker Container
             inputs:
-              containerRegistry: "dockerhub"
-              repository: "$(dockerRegistry)"
-              command: "buildAndPush"
-              Dockerfile: "$(applicationDirectory)/WeatherForecast/dockerfile"
-              buildContext: "$(applicationDirectory)/WeatherForecast/"
+              containerRegistry: 'dockerhub'
+              repository: '$(dockerRegistry)'
+              command: 'buildAndPush'
+              Dockerfile: '$(applicationDirectory)/WeatherForecast/dockerfile'
               tags: |
                 $(Build.BuildId)
                 latest
