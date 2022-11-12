@@ -24,10 +24,10 @@ stages:
           - task: DotNetCoreCLI@2
             displayName: Build .NET App
             inputs:
-              command: "publish"
+              command: 'publish'
               publishWebProjects: true
-              projects: "**/WeatherForecast.csproj"
-              arguments: "-c Release -o $(applicationDirectory)/WeatherForecast/publish"
+              arguments: '-c Release -o $(applicationDirectory)/WeatherForecast/publish'
+              zipAfterPublish: false
               modifyOutputPath: false
           - task: Docker@2
             displayName: Build Docker Container
