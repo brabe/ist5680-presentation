@@ -1,5 +1,5 @@
 trigger:
-- main
+  - main
 
 pool:
   # name: Default
@@ -10,6 +10,8 @@ variables:
     value: $(Build.SourcesDirectory)/application
   - name: infrastructureDirectory
     value: $(Build.SourcesDirectory)/infrastructure
+  - name: dockerRegistry
+    value: "brentrabe/ist5680"
 
 stages:
   # BUILD APPLICATION
@@ -22,50 +24,54 @@ stages:
           - task: DotNetCoreCLI@2
             displayName: Build .NET App
             inputs:
-              command: 'publish'
+              command: "publish"
               publishWebProjects: false
-              projects: '**/WeatherForecast.csproj'
-              arguments: '--self-contained true --runtime alpine-x64 -c Release -o $(applicationDirectory)/WeatherForecast/publish'
+              projects: "**/WeatherForecast.csproj"
+              arguments: "--self-contained true --runtime alpine-x64 -c Release -o $(applicationDirectory)/WeatherForecast/publish"
               modifyOutputPath: false
           - task: Docker@2
             displayName: Build Docker Container
             inputs:
-              containerRegistry: 'dockerhub'
-              repository: 'brentrabe/ist5680'
-              command: 'buildAndPush'
-              Dockerfile: '$(applicationDirectory)/WeatherForecast/dockerfile'
-              buildContext: '$(applicationDirectory)/WeatherForecast/'
+              containerRegistry: "dockerhub"
+              repository: "$(dockerRegistry)"
+              command: "buildAndPush"
+              Dockerfile: "$(applicationDirectory)/WeatherForecast/dockerfile"
+              buildContext: "$(applicationDirectory)/WeatherForecast/"
               tags: |
                 $(Build.BuildId)
                 latest
               addPipelineData: false
               addBaseImageData: false
+
   # BUILD INFRASTRUCTURE
-  - stage: infrastructure
-    displayName: Infrastructure
-    jobs: 
+  - stage: deploymentDev
+    displayName: Deployment - DEV
+    variables:
+      - name: env
+        value: "dev"
+    jobs:
       - job: terraformDeployment
         displayName: Deploy Terraform
         steps:
           - task: AzureKeyVault@2
             displayName: Get Secrets from AKV
             inputs:
-              azureSubscription: 'Action Pack Subscription'
-              KeyVaultName: 'gts-tf-keyvault'
-              SecretsFilter: 'terraform-sp-id, terraform-sp-key, terraform-sp-tenant, terraform-sp-subscription'
-          - task: Bash@3 
+              azureSubscription: "Action Pack Subscription"
+              KeyVaultName: "gts-tf-keyvault"
+              SecretsFilter: "terraform-sp-id, terraform-sp-key, terraform-sp-tenant, terraform-sp-subscription, dockerhub-username, dockerhub-apitoken"
+          - task: Bash@3
             displayName: Terraform Init
             inputs:
               workingDirectory: $(infrastructureDirectory)
               script: |
-                terraform init -no-color
+                terraform init -no-color -backend-config='./vars/backend_$(environment)'
               targetType: inline
             env:
               ARM_SUBSCRIPTION_ID: $(terraform-sp-subscription)
               ARM_TENANT_ID: $(terraform-sp-tenant)
               ARM_CLIENT_ID: $(terraform-sp-id)
               ARM_CLIENT_SECRET: $(terraform-sp-key)
-          - task: Bash@3 
+          - task: Bash@3
             displayName: Terraform Apply
             inputs:
               workingDirectory: $(infrastructureDirectory)
@@ -77,3 +83,149 @@ stages:
               ARM_TENANT_ID: $(terraform-sp-tenant)
               ARM_CLIENT_ID: $(terraform-sp-id)
               ARM_CLIENT_SECRET: $(terraform-sp-key)
+              TF_VAR_environment: "$(env)"
+              TF_VAR_docker_image: "$(dockerRegistry)"
+              TF_VAR_docker_image_tag: "$(Build.BuildId)"
+              TF_VAR_docker_server_username: "$(dockerhub-username)"
+              TF_VAR_docker_server_password: "$(dockerhub-password)"
+
+  - stage: deploymentInt
+    displayName: Deployment - INT
+    variables:
+      - name: env
+        value: "int"
+    jobs:
+      - deployment: pending
+        environment: int
+      - job: terraformDeployment
+        displayName: Deploy Terraform
+        steps:
+          - task: AzureKeyVault@2
+            displayName: Get Secrets from AKV
+            inputs:
+              azureSubscription: "Action Pack Subscription"
+              KeyVaultName: "gts-tf-keyvault"
+              SecretsFilter: "terraform-sp-id, terraform-sp-key, terraform-sp-tenant, terraform-sp-subscription, dockerhub-username, dockerhub-apitoken"
+          - task: Bash@3
+            displayName: Terraform Init
+            inputs:
+              workingDirectory: $(infrastructureDirectory)
+              script: |
+                terraform init -no-color -backend-config='./vars/backend_$(environment)'
+              targetType: inline
+            env:
+              ARM_SUBSCRIPTION_ID: $(terraform-sp-subscription)
+              ARM_TENANT_ID: $(terraform-sp-tenant)
+              ARM_CLIENT_ID: $(terraform-sp-id)
+              ARM_CLIENT_SECRET: $(terraform-sp-key)
+          - task: Bash@3
+            displayName: Terraform Apply
+            inputs:
+              workingDirectory: $(infrastructureDirectory)
+              script: |
+                terraform apply -no-color -auto-approve
+              targetType: inline
+            env:
+              ARM_SUBSCRIPTION_ID: $(terraform-sp-subscription)
+              ARM_TENANT_ID: $(terraform-sp-tenant)
+              ARM_CLIENT_ID: $(terraform-sp-id)
+              ARM_CLIENT_SECRET: $(terraform-sp-key)
+              TF_VAR_environment: "$(env)"
+              TF_VAR_docker_image: "$(dockerRegistry)"
+              TF_VAR_docker_image_tag: "$(Build.BuildId)"
+              TF_VAR_docker_server_username: "$(dockerhub-username)"
+              TF_VAR_docker_server_password: "$(dockerhub-password)"
+
+  - stage: deploymentQa
+    displayName: Deployment - QA
+    variables:
+      - name: env
+        value: "qa"
+    jobs:
+      - deployment: pending
+        environment: qa
+      - job: terraformDeployment
+        displayName: Deploy Terraform
+        steps:
+          - task: AzureKeyVault@2
+            displayName: Get Secrets from AKV
+            inputs:
+              azureSubscription: "Action Pack Subscription"
+              KeyVaultName: "gts-tf-keyvault"
+              SecretsFilter: "terraform-sp-id, terraform-sp-key, terraform-sp-tenant, terraform-sp-subscription, dockerhub-username, dockerhub-apitoken"
+          - task: Bash@3
+            displayName: Terraform Init
+            inputs:
+              workingDirectory: $(infrastructureDirectory)
+              script: |
+                terraform init -no-color -backend-config='./vars/backend_$(environment)'
+              targetType: inline
+            env:
+              ARM_SUBSCRIPTION_ID: $(terraform-sp-subscription)
+              ARM_TENANT_ID: $(terraform-sp-tenant)
+              ARM_CLIENT_ID: $(terraform-sp-id)
+              ARM_CLIENT_SECRET: $(terraform-sp-key)
+          - task: Bash@3
+            displayName: Terraform Apply
+            inputs:
+              workingDirectory: $(infrastructureDirectory)
+              script: |
+                terraform apply -no-color -auto-approve
+              targetType: inline
+            env:
+              ARM_SUBSCRIPTION_ID: $(terraform-sp-subscription)
+              ARM_TENANT_ID: $(terraform-sp-tenant)
+              ARM_CLIENT_ID: $(terraform-sp-id)
+              ARM_CLIENT_SECRET: $(terraform-sp-key)
+              TF_VAR_environment: "$(env)"
+              TF_VAR_docker_image: "$(dockerRegistry)"
+              TF_VAR_docker_image_tag: "$(Build.BuildId)"
+              TF_VAR_docker_server_username: "$(dockerhub-username)"
+              TF_VAR_docker_server_password: "$(dockerhub-password)"
+
+  - stage: deploymentPrd
+    displayName: Deployment - PROD
+    variables:
+      - name: env
+        value: "prd"
+    jobs:
+      - deployment: pending
+        environment: prd
+      - job: terraformDeployment
+        displayName: Deploy Terraform
+        steps:
+          - task: AzureKeyVault@2
+            displayName: Get Secrets from AKV
+            inputs:
+              azureSubscription: "Action Pack Subscription"
+              KeyVaultName: "gts-tf-keyvault"
+              SecretsFilter: "terraform-sp-id, terraform-sp-key, terraform-sp-tenant, terraform-sp-subscription, dockerhub-username, dockerhub-apitoken"
+          - task: Bash@3
+            displayName: Terraform Init
+            inputs:
+              workingDirectory: $(infrastructureDirectory)
+              script: |
+                terraform init -no-color -backend-config='./vars/backend_$(environment)'
+              targetType: inline
+            env:
+              ARM_SUBSCRIPTION_ID: $(terraform-sp-subscription)
+              ARM_TENANT_ID: $(terraform-sp-tenant)
+              ARM_CLIENT_ID: $(terraform-sp-id)
+              ARM_CLIENT_SECRET: $(terraform-sp-key)
+          - task: Bash@3
+            displayName: Terraform Apply
+            inputs:
+              workingDirectory: $(infrastructureDirectory)
+              script: |
+                terraform apply -no-color -auto-approve
+              targetType: inline
+            env:
+              ARM_SUBSCRIPTION_ID: $(terraform-sp-subscription)
+              ARM_TENANT_ID: $(terraform-sp-tenant)
+              ARM_CLIENT_ID: $(terraform-sp-id)
+              ARM_CLIENT_SECRET: $(terraform-sp-key)
+              TF_VAR_environment: "$(env)"
+              TF_VAR_docker_image: "$(dockerRegistry)"
+              TF_VAR_docker_image_tag: "$(Build.BuildId)"
+              TF_VAR_docker_server_username: "$(dockerhub-username)"
+              TF_VAR_docker_server_password: "$(dockerhub-password)"

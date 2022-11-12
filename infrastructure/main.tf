@@ -1,11 +1,11 @@
 
 locals {
-  prefix = var.prefix
+  prefix = "ist5680_${var.environment}"
 }
 
 resource "azurerm_resource_group" "rg01" {
-  name     = local.prefix
-  location = "Central US"
+  name     = "${local.prefix}-rg01"
+  location = "centralus"
 }
 
 resource "azurerm_service_plan" "asp01" {
@@ -23,19 +23,18 @@ resource "azurerm_linux_web_app" "web01" {
   service_plan_id     = azurerm_service_plan.asp01.id
   site_config {
     application_stack {
-      docker_image     = "nginx"
-      docker_image_tag = "latest"
+      docker_image     = var.docker_image
+      docker_image_tag = var.docker_image_tag
     }
+  }
+
+  app_settings = {
+    "DOCKER_REGISTRY_SERVER_URL"      = "https://index.docker.io/v1"
+    "DOCKER_REGISTRY_SERVER_USERNAME" = var.docker_server_username
+    "DOCKER_REGISTRY_SERVER_PASSWORD" = var.docker_server_password
   }
 
   identity {
     type = "SystemAssigned"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      site_config[0].application_stack[0],
-      app_settings["DOCKER_REGISTRY_SERVER_URL"]
-    ]
   }
 }
