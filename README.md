@@ -17,8 +17,7 @@ This presentation covers the following topics:
 
 This folder contains the demo applications deployed as a part of this presentation.
 
-- Blazor Server App
-- Azure Function
+- ASP .NET Web API
 
 ### Infrastructure
 
@@ -27,17 +26,15 @@ This folder contains IAC deployed as a part of this presentation.
 - Resource Group
 - App Service Plan
 - Linux Web App
-- Linux Function App
 
 ### Pipeline
 
 This folder contains the Azure Pipeline configuration files used as a part this presentation.
 
 - Application Build
-  - Blazor Server App
-  - Azure Function
+  - ASP .NET Web API
+  - Docker Container
 - Infrastructure Provisioning
   - Terraform
 - Application Deployment
-  - Publish Server App
-  - Publish Azure Function
+  - Restart App Service
