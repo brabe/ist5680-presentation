@@ -87,6 +87,11 @@ stages:
               TF_VAR_docker_image_tag: "$(Build.BuildId)"
               TF_VAR_docker_server_username: "$(dockerhub-username)"
               TF_VAR_docker_server_password: "$(dockerhub-apitoken)"
+          - task: AzureAppServiceManage@0
+            inputs:
+              azureSubscription: 'Action Pack Subscription'
+              Action: 'Restart Azure App Service'
+              WebAppName: 'ist5680-dev-web01'
 
   - stage: deploymentInt
     displayName: Deployment - INT
@@ -134,6 +139,11 @@ stages:
               TF_VAR_docker_image_tag: "$(Build.BuildId)"
               TF_VAR_docker_server_username: "$(dockerhub-username)"
               TF_VAR_docker_server_password: "$(dockerhub-apitoken)"
+          - task: AzureAppServiceManage@0
+            inputs:
+              azureSubscription: 'Action Pack Subscription'
+              Action: 'Restart Azure App Service'
+              WebAppName: 'ist5680-int-web01'
 
   - stage: deploymentQa
     displayName: Deployment - QA
@@ -181,6 +191,11 @@ stages:
               TF_VAR_docker_image_tag: "$(Build.BuildId)"
               TF_VAR_docker_server_username: "$(dockerhub-username)"
               TF_VAR_docker_server_password: "$(dockerhub-apitoken)"
+          - task: AzureAppServiceManage@0
+            inputs:
+              azureSubscription: 'Action Pack Subscription'
+              Action: 'Restart Azure App Service'
+              WebAppName: 'ist5680-qa-web01'
 
   - stage: deploymentPrd
     displayName: Deployment - PROD
@@ -228,3 +243,8 @@ stages:
               TF_VAR_docker_image_tag: "$(Build.BuildId)"
               TF_VAR_docker_server_username: "$(dockerhub-username)"
               TF_VAR_docker_server_password: "$(dockerhub-apitoken)"
+          - task: AzureAppServiceManage@0
+            inputs:
+              azureSubscription: 'Action Pack Subscription'
+              Action: 'Restart Azure App Service'
+              WebAppName: 'ist5680-prd-web01'
